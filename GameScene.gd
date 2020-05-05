@@ -8,12 +8,12 @@ var Player = null
 var cam = null
 
 func _ready():
-	var labelText = "Stage " + str(globals.currentStage)
+	var labelText = "Stage " + str(rustGameState.current_stage())
 	$Label.set_text(labelText)
 	$AnimationPlayer.play("Stage Display")
 
 func _process(delta):
-	$HUD/Kills.set_text("Kills: " + str(globals.kills))
+	$HUD/Kills.set_text("Kills: " + str(rustGameState.kills()))
 	
 func startAnimationDone():
 	$Label.visible = false
@@ -31,7 +31,7 @@ func _on_Area2D_area_entered(area):
 	if (area.get_collision_layer_bit(4)):
 		if (State == GameState.Running):
 			Player.speed = 0
-			globals.currentStage = globals.currentStage + 1
+			rustGameState.advance_to_next_stage()
 			get_tree().reload_current_scene()
 			
 func PlayerDied():
@@ -51,7 +51,7 @@ func SpawnEnemy(x, y):
 	
 func SpawnEnemies():
 	randomize()
-	for i in range(0, 10+globals.currentStage):
+	for i in range(0, 10+rustGameState.current_stage()):
 		SpawnEnemy(700 +randi()%5000, randi()%int(get_viewport_rect().size.y))
 
 func SpawnBossWafe():

@@ -8,9 +8,7 @@ extends Node
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	globals.kills = 0
-	globals.currentStage = 1
-
+	rustGameState.reset()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):

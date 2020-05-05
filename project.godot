@@ -21,7 +21,7 @@ config/icon="res://icon.png"
 
 [autoload]
 
-globals="*res://globals.gd"
+rustGameState="*res://game_state.gdns"
 
 [display]
 

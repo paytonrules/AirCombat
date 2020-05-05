@@ -37,7 +37,7 @@ func stop():
 func explode():	
 	explode.set_position(self.get_position())
 	get_parent().add_child(explode)
-	globals.kills += 1
+	rustGameState.increment_kills()
 	shotCooldown.wait_time = 2.5
 	shotCooldown.start()
 	$Sprite.visible = false

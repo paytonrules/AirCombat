@@ -10,7 +10,7 @@ var speed = 100;
 onready var explode = preload("res://Explosion.tscn").instance()
 
 func _ready():
-	speed = speed + (globals.currentStage * 10)
+	speed = speed + (rustGameState.current_stage() * 10)
 	
 func _enter_tree():
 	sprite = Sprite.new()
@@ -25,5 +25,5 @@ func _on_Area2D_area_entered(area):
 	if(area.get_collision_layer_bit(3)):
 		explode.set_position(self.get_position())
 		get_parent().add_child(explode)
-		globals.kills += 1
+		rustGameState.increment_kills()
 		queue_free()
