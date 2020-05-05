@@ -43,8 +43,32 @@ impl GameState {
     }
 }
 
+#[derive(NativeClass)]
+#[inherit(Node2D)]
+pub struct Bullet;
+
+#[methods]
+impl Bullet {
+    fn _init(_owner: gdnative::Node2D) -> Self {
+        Bullet
+    }
+
+    #[export]
+    unsafe fn _on_Area2D_area_entered(&self, mut owner: gdnative::Node2D, area: gdnative::Area) {
+        if area.get_collision_layer_bit(2) {
+            owner.queue_free();
+        }
+    }
+
+    #[export]
+    unsafe fn _process(&self, mut owner: gdnative::Node2D, delta: f64) {
+        owner.move_local_x(delta * 400.0, false)
+    }
+}
+
 fn init(handle: gdnative::init::InitHandle) {
     handle.add_class::<GameState>();
+    handle.add_class::<Bullet>();
 }
 
 godot_gdnative_init!();
