@@ -62,7 +62,6 @@ func _input(event):
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	print_debug("Just a test")
 	bulletObj = load("res://Bullet.tscn")
 	shotCooldown.wait_time = 1.0 / RATE_OF_FIRE
 	shotCooldown.one_shot = true
