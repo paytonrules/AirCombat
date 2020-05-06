@@ -81,9 +81,76 @@ impl Bullet {
     }
 }
 
+#[derive(NativeClass)]
+#[inherit(Node)]
+struct TitleScreen;
+
+#[methods]
+impl TitleScreen {
+    fn _init(_owner: gdnative::Node) -> Self {
+        TitleScreen
+    }
+
+    #[export]
+    unsafe fn _ready(&self, owner: gdnative::Node) {
+        let tree = owner.get_tree().expect("Couldn't find scene tree!");
+        let root = tree.get_root().expect("Coudln't get root node, whaaaaa?");
+        let rustGameStateNode = root
+            .get_node(NodePath::from_str("./rustGameState"))
+            .expect("Couldn't get rustGame State Node");
+        let rustGameStateInstance: Instance<GameState> = Instance::try_from_base(rustGameStateNode)
+            .expect("Couldn't convert rustGameState node to rustGameState");
+        rustGameStateInstance
+            .map_mut(|gs, o| gs.reset(o))
+            .expect("Could not reset");
+        /*
+        let singleton = gdnative::Engine::godot_singleton();
+        if let Some(gameStateNode) = singleton.get_singleton("rustGameState".into()) {
+            let rustGameState: Instance<GameState> = Instance::try_from_unsafe_base(owner).unwrap();
+            rustGameState
+                .map_mut(|state, the_owner| state.reset(the_owner))
+                .expect("couldn't map the result. Womp womp.");
+        }*/
+
+        if let Some(node) = &mut owner.get_node(NodePath::from_str("./NewGame")) {
+            let godot_object = &owner.to_object();
+            node.connect(
+                "pressed".into(),
+                Some(*godot_object),
+                "_on_newgame_pressed".into(),
+                VariantArray::new(),
+                0,
+            )
+            .expect("Couldn't connect on_newgame_pressed");
+        }
+
+        if let Some(node) = &mut owner.get_node(NodePath::from_str("./QuitGame")) {
+            let godot_object = &owner.to_object();
+            node.connect(
+                "pressed".into(),
+                Some(*godot_object),
+                "_on_quitgame_pressed".into(),
+                VariantArray::new(),
+                0,
+            )
+            .expect("Couldn't connect on_newgame_pressed");
+        }
+    }
+
+    #[export]
+    fn _on_newgame_pressed(&self, owner: gdnative::Node) {}
+
+    #[export]
+    unsafe fn _on_quitgame_pressed(&self, owner: gdnative::Node) {
+        let tree = &mut owner.get_tree().expect("Couldn't find scene tree!");
+        tree.quit(-1);
+    }
+}
+
 fn init(handle: gdnative::init::InitHandle) {
     handle.add_class::<GameState>();
     handle.add_class::<Bullet>();
+    handle.add_class::<TitleScreen>();
 }
 
 godot_gdnative_init!();
