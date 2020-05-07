@@ -93,24 +93,16 @@ impl TitleScreen {
 
     #[export]
     unsafe fn _ready(&self, owner: gdnative::Node) {
-        let tree = owner.get_tree().expect("Couldn't find scene tree!");
-        let root = tree.get_root().expect("Coudln't get root node, whaaaaa?");
-        let rustGameStateNode = root
-            .get_node(NodePath::from_str("./rustGameState"))
-            .expect("Couldn't get rustGame State Node");
-        let rustGameStateInstance: Instance<GameState> = Instance::try_from_base(rustGameStateNode)
-            .expect("Couldn't convert rustGameState node to rustGameState");
-        rustGameStateInstance
+        let rust_game_state: Instance<GameState> = owner
+            .get_tree()
+            .and_then(|tree| tree.get_root())
+            .and_then(|root| root.get_node(NodePath::from_str("./rustGameState")))
+            .and_then(|node| Instance::try_from_base(node))
+            .expect("Failed to get game state instance");
+
+        rust_game_state
             .map_mut(|gs, o| gs.reset(o))
-            .expect("Could not reset");
-        /*
-        let singleton = gdnative::Engine::godot_singleton();
-        if let Some(gameStateNode) = singleton.get_singleton("rustGameState".into()) {
-            let rustGameState: Instance<GameState> = Instance::try_from_unsafe_base(owner).unwrap();
-            rustGameState
-                .map_mut(|state, the_owner| state.reset(the_owner))
-                .expect("couldn't map the result. Womp womp.");
-        }*/
+            .expect("Could not reset game state");
 
         if let Some(node) = &mut owner.get_node(NodePath::from_str("./NewGame")) {
             let godot_object = &owner.to_object();
