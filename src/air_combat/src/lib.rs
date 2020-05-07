@@ -130,7 +130,11 @@ impl TitleScreen {
     }
 
     #[export]
-    fn _on_newgame_pressed(&self, owner: gdnative::Node) {}
+    unsafe fn _on_newgame_pressed(&self, owner: gdnative::Node) {
+        if let Some(tree) = &mut owner.get_tree() {
+            tree.change_scene("res://GameScene.tscn".into());
+        }
+    }
 
     #[export]
     unsafe fn _on_quitgame_pressed(&self, owner: gdnative::Node) {
