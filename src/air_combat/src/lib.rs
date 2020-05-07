@@ -1,4 +1,5 @@
 use gdnative::*;
+mod game_scene;
 
 #[derive(NativeClass)]
 #[inherit(Node)]
@@ -147,6 +148,7 @@ fn init(handle: gdnative::init::InitHandle) {
     handle.add_class::<GameState>();
     handle.add_class::<Bullet>();
     handle.add_class::<TitleScreen>();
+    handle.add_class::<game_scene::GameScene>();
 }
 
 godot_gdnative_init!();
