@@ -1,6 +1,5 @@
 extends Node2D
 
-
 # Declare member variables here. Examples:
 var speed = 150
 var verticalMovement = 0

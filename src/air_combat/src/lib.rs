@@ -134,7 +134,8 @@ impl TitleScreen {
     #[export]
     unsafe fn _on_newgame_pressed(&self, owner: gdnative::Node) {
         if let Some(tree) = &mut owner.get_tree() {
-            tree.change_scene("res://GameScene.tscn".into());
+            tree.change_scene("res://GameScene.tscn".into())
+                .expect("Game Scene could not be loaded");
         }
     }
 
