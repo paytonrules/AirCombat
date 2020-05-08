@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://assets/graphics/player/Player128_red.png" type="Texture" id=1]
-[ext_resource path="res://Player.gd" type="Script" id=2]
+[ext_resource path="res://Player.gdns" type="Script" id=2]
 
 [node name="PlayerRoot" type="Node2D"]
 script = ExtResource( 2 )

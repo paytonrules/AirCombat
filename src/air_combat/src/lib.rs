@@ -1,5 +1,6 @@
 use gdnative::*;
 mod game_scene;
+mod player;
 
 #[derive(NativeClass)]
 #[inherit(Node)]
