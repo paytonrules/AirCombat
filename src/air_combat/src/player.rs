@@ -51,4 +51,15 @@ impl Player {
             .load("res://Bullet.tscn".into(), "".into(), false)
             .and_then(|res| res.cast::<PackedScene>())
     }
+
+    #[export]
+    unsafe fn _process(&self, mut owner: gdnative::Node2D, delta: f64) {
+        owner.move_local_x(self.speed as f64 * delta, false);
+
+        let position = owner.get_position();
+        let bottom = owner.get_viewport_rect().size.height;
+        if (position.y > 1.0 && position.y <= bottom) {
+            owner.move_local_y(MAX_VERTICAL_MOVEMENT as f64 * delta, false);
+        }
+    }
 }
