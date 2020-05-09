@@ -1,3 +1,4 @@
+use crate::game_scene;
 use gdnative::*;
 
 #[derive(NativeClass)]
@@ -53,13 +54,39 @@ impl Player {
     }
 
     #[export]
-    unsafe fn _process(&self, mut owner: gdnative::Node2D, delta: f64) {
+    unsafe fn _process(&mut self, mut owner: gdnative::Node2D, delta: f64) {
         owner.move_local_x(self.speed as f64 * delta, false);
 
         let position = owner.get_position();
         let bottom = owner.get_viewport_rect().size.height;
-        if (position.y > 1.0 && position.y <= bottom) {
+        if position.y > 1.0 && position.y <= bottom {
             owner.move_local_y(MAX_VERTICAL_MOVEMENT as f64 * delta, false);
+        } else {
+            if position.y < 1.0 {
+                owner.move_local_y(10.0, false);
+                self.vertical_movement = 0;
+            } else if position.y > bottom {
+                owner.move_local_y(-10.0, false);
+                self.vertical_movement = 0;
+            }
+        }
+
+        if self.dying {
+            if let Some(shot_cooldown) = self.shot_cooldown {
+                if shot_cooldown.get_time_left() == 0.0 {
+                    let game: Instance<game_scene::GameScene> = owner
+                        .get_node(NodePath::from_str("/root/GameSceneRoot"))
+                        .and_then(|node| node.cast::<Node2D>())
+                        .and_then(|node| Instance::try_from_base(node))
+                        .expect("Could not unwrap game scene");
+
+                    game.map(|p, _| p.player_died())
+                        .expect("Player cannot die, you are a god");
+                }
+            }
+
+            owner.queue_free();
+            godot_print!("Dead");
         }
     }
 }

@@ -14,4 +14,6 @@ impl GameScene {
     fn _init(_owner: gdnative::Node2D) -> Self {
         GameScene
     }
+
+    pub fn player_died(&self) {}
 }
