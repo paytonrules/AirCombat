@@ -31,6 +31,18 @@ impl Player {
 
     #[export]
     unsafe fn _ready(&mut self, owner: gdnative::Node2D) {
+        if let Some(node) = &mut owner.get_node(NodePath::from_str("./Area2D")) {
+            let godot_object = &owner.to_object();
+            node.connect(
+                "area_entered".into(),
+                Some(*godot_object),
+                "_on_area2d_area_entered".into(),
+                VariantArray::new(),
+                0,
+            )
+            .expect("Couldn't connect area_entered");
+        }
+
         self.shot_cooldown = owner
             .get_node(NodePath::from_str("Timer"))
             .map(|node| node.cast::<Timer>())
@@ -42,7 +54,6 @@ impl Player {
         }
 
         let mut resource_loader = ResourceLoader::godot_singleton();
-
         self.explode = resource_loader
             .load("res://Explosion.tscn".into(), "".into(), false)
             .and_then(|res| res.cast::<PackedScene>())
@@ -131,5 +142,12 @@ impl Player {
         }
 
         self.dying = true;
+    }
+
+    #[export]
+    unsafe fn _on_area2d_area_entered(&mut self, owner: gdnative::Node2D, area: gdnative::Area2D) {
+        if area.get_collision_layer_bit(2) {
+            self.explode(owner);
+        }
     }
 }
