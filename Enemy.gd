@@ -3,7 +3,7 @@ extends Node2D
 var sprite = null
 const sprites = ["enemy1_blue.png", "enemy1_green.png",
 "enemy1_red.png", "enemy1_yellow.png", "enemy2_blue.png",
-"enemy2_pink.png", "enemy2_red.png", "enemy2_yello.png"]
+"enemy2_pink.png", "enemy2_red.png", "enemy2_yellow.png"]
 
 var speed = 100;
 
