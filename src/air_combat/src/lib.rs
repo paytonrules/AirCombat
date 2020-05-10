@@ -39,8 +39,7 @@ impl GameState {
         self.current_stage += 1;
     }
 
-    #[export]
-    fn increment_kills(&mut self, _owner: gdnative::Node) {
+    fn increment_kills(&mut self) {
         self.kills += 1;
     }
 }
