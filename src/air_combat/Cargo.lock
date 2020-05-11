@@ -13,6 +13,7 @@ dependencies = [
 name = "air_combat"
 version = "0.1.0"
 dependencies = [
+ "euclid",
  "gdnative",
 ]
 

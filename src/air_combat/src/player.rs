@@ -1,19 +1,20 @@
 use crate::game_scene;
 use crate::GameState;
+use euclid::Vector2D;
 use gdnative::*;
 
 #[derive(NativeClass)]
 #[inherit(Node2D)]
 pub struct Player {
     speed: u8,
-    vertical_movement: u8,
+    vertical_movement: i16,
     bullet_obj: Option<gdnative::PackedScene>,
     dying: bool,
     shot_cooldown: Option<gdnative::Timer>,
     explode: Option<gdnative::Node2D>,
 }
 
-const MAX_VERTICAL_MOVEMENT: u8 = 200;
+const MAX_VERTICAL_MOVEMENT: i16 = 200;
 const RATE_OF_FIRE: f32 = 3.0;
 
 #[methods]
@@ -100,6 +101,46 @@ impl Player {
 
             owner.queue_free();
             godot_print!("Dead");
+        }
+    }
+
+    #[export]
+    unsafe fn _input(&mut self, owner: Node2D, event: InputEvent) {
+        if event.is_action("PLAYER_UP".into()) {
+            if self.vertical_movement >= -MAX_VERTICAL_MOVEMENT {
+                self.vertical_movement -= 10
+            }
+        }
+
+        if event.is_action("PLAYER_DOWN".into()) {
+            if self.vertical_movement <= MAX_VERTICAL_MOVEMENT {
+                self.vertical_movement += 10
+            }
+        }
+
+        if event.is_action("PLAYER_SHOOT".into()) {
+            if let Some(mut shot_cooldown) = self.shot_cooldown {
+                if shot_cooldown.get_time_left() == 0.0 {
+                    if let Some(bullet_scene) = self.bullet_obj.take() {
+                        let mut bullet = bullet_scene
+                            .instance(0)
+                            .and_then(|b| b.cast::<Node2D>())
+                            .expect("Could not intantiate bullet scene!");
+
+                        bullet.set_position(owner.get_position());
+                        let position = owner.get_position();
+                        bullet.set_position(Vector2D::new(position.x, position.y + 20.0));
+
+                        if let Some(mut root_scene) =
+                            owner.get_node(NodePath::from_str("/root/GameSceneRoot"))
+                        {
+                            root_scene.add_child(bullet.cast::<Node>(), false);
+                        }
+                        shot_cooldown.start(-1.0);
+                        self.bullet_obj.replace(bullet_scene);
+                    }
+                }
+            }
         }
     }
 
