@@ -1,4 +1,5 @@
 use gdnative::*;
+mod enemy;
 mod game_scene;
 mod player;
 
@@ -151,6 +152,7 @@ fn init(handle: gdnative::init::InitHandle) {
     handle.add_class::<TitleScreen>();
     handle.add_class::<game_scene::GameScene>();
     handle.add_class::<player::Player>();
+    handle.add_class::<enemy::Enemy>();
 }
 
 godot_gdnative_init!();
