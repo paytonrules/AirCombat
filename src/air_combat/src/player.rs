@@ -134,7 +134,7 @@ impl Player {
                         if let Some(mut root_scene) =
                             owner.get_node(NodePath::from_str("/root/GameSceneRoot"))
                         {
-                            root_scene.add_child(bullet.cast::<Node>(), false);
+                            root_scene.add_child(Some(bullet.to_node()), false);
                         }
                         shot_cooldown.start(-1.0);
                         self.bullet_obj.replace(bullet_scene);
@@ -167,7 +167,7 @@ impl Player {
             let parent = &mut owner
                 .get_parent()
                 .expect("Could not get parent of player object!");
-            parent.add_child(explode.cast::<Node>(), false);
+            parent.add_child(Some(explode.to_node()), false);
         }
 
         if let Some(mut shot_cooldown) = self.shot_cooldown {
