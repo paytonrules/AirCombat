@@ -6,7 +6,7 @@ use gdnative::*;
 #[derive(NativeClass)]
 #[inherit(Node2D)]
 pub struct Player {
-    speed: u8,
+    pub speed: u8,
     vertical_movement: i16,
     bullet_obj: Option<gdnative::PackedScene>,
     dying: bool,
@@ -94,7 +94,7 @@ impl Player {
                         .and_then(|node| Instance::try_from_base(node))
                         .expect("Could not unwrap game scene");
 
-                    game.map(|p, _| p.player_died())
+                    game.map_mut(|p, _| p.player_died())
                         .expect("Player cannot die, you are a god");
                 }
             }
