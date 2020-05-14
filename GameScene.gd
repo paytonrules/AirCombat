@@ -54,7 +54,7 @@ func SpawnEnemies():
 	for i in range(0, 10+rustGameState.current_stage()):
 		SpawnEnemy(700 +randi()%5000, randi()%int(get_viewport_rect().size.y))
 
-func SpawnBossWafe():
+func SpawnBossWave():
 	for i in range(0, 10):
 		SpawnEnemy(3800 + randi()%220, randi()%720)
 		

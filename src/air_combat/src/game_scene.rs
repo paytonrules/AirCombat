@@ -14,7 +14,6 @@ pub struct GameScene {
     state: State,
     enemy_obj: Option<PackedScene>,
     player: Option<Node2D>,
-    cam: Option<Camera2D>,
     stage_label: Option<Label>,
 }
 
@@ -25,7 +24,6 @@ impl GameScene {
             state: State::Loading,
             enemy_obj: None,
             player: None,
-            cam: None,
             stage_label: None,
         }
     }
@@ -69,7 +67,7 @@ impl GameScene {
     }
 
     #[export]
-    unsafe fn _process(&self, owner: Node2D, delta: f64) {
+    unsafe fn _process(&self, owner: Node2D, _delta: f64) {
         let rust_game_state: Instance<GameState> = owner
             .get_tree()
             .and_then(|tree| tree.get_root())
@@ -144,11 +142,6 @@ impl GameScene {
     }
 
     pub unsafe fn player_died(&mut self) {
-        let player_instance: Instance<Player> = self
-            .player
-            .and_then(|pl| Instance::try_from_base(pl))
-            .expect("Could not covert player to player instance!");
-
         if let Some(player) = self.player {
             for var in player.get_children().iter() {
                 let mut child = Node::from_variant(var).expect("Could not convert child to node");
@@ -172,5 +165,39 @@ impl GameScene {
         self.state = State::GameOver;
     }
 
-    fn spawn_enemies(&self, owner: Node2D) {}
+    unsafe fn spawn_enemy(&mut self, mut owner: Node2D, x: f32, y: f32) {
+        if let Some(enemy_obj) = self.enemy_obj.take() {
+            let mut enemy = enemy_obj
+                .instance(0)
+                .and_then(|node| node.cast::<Node2D>())
+                .expect("Could not create enemy instance!");
+            enemy.set_position(euclid::Vector2D::new(x, y));
+            owner.add_child(Some(enemy.to_node()), false);
+            self.enemy_obj.replace(enemy_obj);
+        }
+    }
+
+    unsafe fn spawn_enemies(&mut self, owner: Node2D) {
+        let rust_game_state: Instance<GameState> = owner
+            .get_tree()
+            .and_then(|tree| tree.get_root())
+            .and_then(|root| root.get_node(NodePath::from_str("./rustGameState")))
+            .and_then(|node| Instance::try_from_base(node))
+            .expect("Failed to get game state instance");
+
+        let mut generator = RandomNumberGenerator::new();
+        generator.randomize();
+        let current_stage = rust_game_state
+            .map(|gs, _| gs.current_stage)
+            .expect("Couldn't get current stage");
+
+        for _ in 0..=10 + current_stage {
+            let bottom = owner.get_viewport_rect().size.height;
+            self.spawn_enemy(
+                owner,
+                (700 + (generator.randi() % 5000)) as f32,
+                generator.randi() as f32 % bottom,
+            );
+        }
+    }
 }
