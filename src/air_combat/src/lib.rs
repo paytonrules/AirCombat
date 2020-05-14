@@ -35,8 +35,7 @@ impl GameState {
         self.kills
     }
 
-    #[export]
-    fn advance_to_next_stage(&mut self, _owner: gdnative::Node) {
+    fn advance_to_next_stage(&mut self) {
         self.current_stage += 1;
     }
 
