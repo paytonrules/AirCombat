@@ -30,6 +30,11 @@ impl GameScene {
 
     #[export]
     unsafe fn _ready(&mut self, owner: gdnative::Node2D) {
+        let mut resource_loader = ResourceLoader::godot_singleton();
+        self.enemy_obj = resource_loader
+            .load("res://Enemy.tscn".into(), "".into(), false)
+            .and_then(|res| res.cast::<PackedScene>());
+
         if let Some(node) = &mut owner.get_node(NodePath::from_str("./Triggers/Area2D")) {
             let godot_object = &owner.to_object();
             node.connect(
@@ -167,6 +172,7 @@ impl GameScene {
 
     unsafe fn spawn_enemy(&mut self, mut owner: Node2D, x: f32, y: f32) {
         if let Some(enemy_obj) = self.enemy_obj.take() {
+            godot_print!("HERE? HERE!");
             let mut enemy = enemy_obj
                 .instance(0)
                 .and_then(|node| node.cast::<Node2D>())
