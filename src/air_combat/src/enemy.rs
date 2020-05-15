@@ -32,18 +32,6 @@ impl Enemy {
 
     #[export]
     unsafe fn _ready(&mut self, owner: gdnative::Node2D) {
-        if let Some(node) = &mut owner.get_node(NodePath::from_str("./Area2D")) {
-            let godot_object = &owner.to_object();
-            node.connect(
-                "area_entered".into(),
-                Some(*godot_object),
-                "_on_area2d_area_entered".into(),
-                VariantArray::new(),
-                0,
-            )
-            .expect("Couldn't connect area_entered");
-        }
-
         let mut resource_loader = ResourceLoader::godot_singleton();
         self.explode = resource_loader
             .load("res://Explosion.tscn".into(), "".into(), false)

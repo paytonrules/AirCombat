@@ -11,3 +11,4 @@ collision_mask = 10
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Area2D"]
 polygon = PoolVector2Array( 48.66, -34.2163, 23.381, -5.40167, -15.3331, -13.7102, -63.4164, 12.6296, 24.7849, 38.1668, 41.4122, 34.9034, 37.5129, 22.9639, 63.1557, 17.049, 61.388, 3.96749, 56.0847, -1.86613, 59.4434, -34.9234 )
+[connection signal="area_entered" from="Area2D" to="." method="_on_area2d_area_entered"]

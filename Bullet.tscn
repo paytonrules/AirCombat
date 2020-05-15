@@ -29,7 +29,7 @@ position = Vector2( 0.176773, 0 )
 z_index = -1
 frames = SubResource( 1 )
 animation = "MissleFlame"
-frame = 2
+frame = 1
 playing = true
 offset = Vector2( -25, 0 )
 
@@ -43,3 +43,4 @@ shape = SubResource( 2 )
 [node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource( 5 )
 autoplay = true
+[connection signal="area_entered" from="Area2D" to="." method="_on_area2d_area_entered"]
