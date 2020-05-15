@@ -1,4 +1,4 @@
-use crate::GameState;
+use crate::game_state::GameState;
 use gdnative::*;
 
 #[derive(NativeClass)]

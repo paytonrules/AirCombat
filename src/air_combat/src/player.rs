@@ -1,5 +1,5 @@
 use crate::game_scene;
-use crate::GameState;
+use crate::game_state::GameState;
 use euclid::Vector2D;
 use gdnative::*;
 

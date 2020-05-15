@@ -1,5 +1,5 @@
+use crate::game_state::GameState;
 use crate::player::Player;
-use crate::GameState;
 use gdnative::*;
 
 #[derive(PartialEq)]
