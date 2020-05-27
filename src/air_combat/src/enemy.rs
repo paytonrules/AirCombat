@@ -43,7 +43,7 @@ impl Enemy {
         let rust_game_state: Instance<GameState> = owner
             .get_tree()
             .and_then(|tree| tree.get_root())
-            .and_then(|root| root.get_node(NodePath::from_str("./rustGameState")))
+            .and_then(|root| root.get_node("./rustGameState".into()))
             .and_then(|node| Instance::try_from_base(node))
             .expect("Failed to get game state instance");
 
@@ -86,7 +86,7 @@ impl Enemy {
                 let rust_game_state: Instance<GameState> = owner
                     .get_tree()
                     .and_then(|tree| tree.get_root())
-                    .and_then(|root| root.get_node(NodePath::from_str("./rustGameState")))
+                    .and_then(|root| root.get_node("./rustGameState".into()))
                     .and_then(|node| Instance::try_from_base(node))
                     .expect("Failed to get game state instance");
 
