@@ -33,14 +33,9 @@ impl Player {
     #[export]
     unsafe fn _ready(&mut self, owner: gdnative::Node2D) {
         self.shot_cooldown = owner
-            .get_node(NodePath::from_str("Timer"))
+            .get_node("Timer".into())
             .map(|node| node.cast::<Timer>())
             .expect("Missing 'Timer' node");
-
-        if let Some(shot_cooldown) = self.shot_cooldown.as_mut() {
-            shot_cooldown.set_wait_time((1.0 / RATE_OF_FIRE) as f64);
-            shot_cooldown.set_one_shot(true);
-        }
 
         let mut resource_loader = ResourceLoader::godot_singleton();
         self.explode = resource_loader
@@ -49,6 +44,11 @@ impl Player {
             .and_then(|packed_scene| packed_scene.instance(0))
             .map(|scene| scene.cast::<Node2D>())
             .expect("Could not load explosion");
+
+        if let Some(shot_cooldown) = self.shot_cooldown.as_mut() {
+            shot_cooldown.set_wait_time((1.0 / RATE_OF_FIRE) as f64);
+            shot_cooldown.set_one_shot(true);
+        }
 
         self.bullet_obj = resource_loader
             .load("res://Bullet.tscn".into(), "".into(), false)
@@ -77,7 +77,7 @@ impl Player {
             if let Some(shot_cooldown) = self.shot_cooldown {
                 if shot_cooldown.get_time_left() == 0.0 {
                     let game: Instance<game_scene::GameScene> = owner
-                        .get_node(NodePath::from_str("/root/GameSceneRoot"))
+                        .get_node("/root/GameSceneRoot".into())
                         .and_then(|node| node.cast::<Node2D>())
                         .and_then(|node| Instance::try_from_base(node))
                         .expect("Could not unwrap game scene");
@@ -119,9 +119,7 @@ impl Player {
                         let position = owner.get_position();
                         bullet.set_position(Vector2D::new(position.x, position.y + 20.0));
 
-                        if let Some(mut root_scene) =
-                            owner.get_node(NodePath::from_str("/root/GameSceneRoot"))
-                        {
+                        if let Some(mut root_scene) = owner.get_node("/root/GameSceneRoot".into()) {
                             root_scene.add_child(Some(bullet.to_node()), false);
                         }
                         shot_cooldown.start(-1.0);
@@ -142,7 +140,7 @@ impl Player {
         let rust_game_state: Instance<GameState> = owner
             .get_tree()
             .and_then(|tree| tree.get_root())
-            .and_then(|root| root.get_node(NodePath::from_str("./rustGameState")))
+            .and_then(|root| root.get_node("./rustGameState".into()))
             .and_then(|node| Instance::try_from_base(node))
             .expect("Failed to get game state instance");
 
@@ -164,7 +162,7 @@ impl Player {
         }
 
         if let Some(mut sprite) = owner
-            .get_node(NodePath::from_str("Sprite"))
+            .get_node("Sprite".into())
             .and_then(|node| node.cast::<Sprite>())
         {
             sprite.set_visible(false);
