@@ -100,9 +100,9 @@ dependencies = [
 
 [[package]]
 name = "gdnative"
-version = "0.8.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "051b67ef51102e79e5dfb15e898c8b5d4897479f1d1106a5dc210a4745993958"
+checksum = "0e705ae31ce04636b57f7cd3e4e21e06c0f26244acdca76910083e519007b2b6"
 dependencies = [
  "gdnative-bindings",
  "gdnative-core",
@@ -111,9 +111,9 @@ dependencies = [
 
 [[package]]
 name = "gdnative-bindings"
-version = "0.8.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d5f09a798692d8af199db5a5ebc4c853deb4df3f213df055d7efb824158fb6f8"
+checksum = "b4f0944fc3eb7b9f46c70a612d2a8cdcdead62226c2a2a63e705c9db5c32088c"
 dependencies = [
  "bitflags",
  "gdnative-core",
@@ -124,9 +124,9 @@ dependencies = [
 
 [[package]]
 name = "gdnative-core"
-version = "0.8.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b62dda39ac1ad1da82ade2469252ea3484256da544b8b032c00fe80c6eb8defa"
+checksum = "04df6a5f6032bec516343e5393bd147e6b51031e44ac505b8f5737fa52f55737"
 dependencies = [
  "bitflags",
  "euclid",
@@ -138,9 +138,9 @@ dependencies = [
 
 [[package]]
 name = "gdnative-derive"
-version = "0.8.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "54554ceb5d515a0ff42cef103efc1626a87f56dd8541003038d035a4e48d897d"
+checksum = "6c4f58801ae441895c4b8b42e7aa39df46763d10ad21f83c179a3320db9ec44e"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -149,9 +149,9 @@ dependencies = [
 
 [[package]]
 name = "gdnative-sys"
-version = "0.8.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df4ea008bcf8ea400d45d741f9cfd4efb816f6b4a6cc4a483d2ad952be991a34"
+checksum = "3f2e5ad0143a345a631f774872ee9c3384f2c22b0f5909370e17042001fdd167"
 dependencies = [
  "bindgen",
  "libc",
@@ -163,9 +163,9 @@ dependencies = [
 
 [[package]]
 name = "gdnative_bindings_generator"
-version = "0.8.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "841db50d922d9c050b1807743bc921df3576d153cbdb961cb8ad0a53357d7823"
+checksum = "53e4aa0314251c713da752db6f5fba7fd15720800e33573da825c48442c80aef"
 dependencies = [
  "heck",
  "serde",
