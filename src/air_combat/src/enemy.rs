@@ -1,11 +1,13 @@
 use crate::game_state::GameState;
-use gdnative::*;
+use gdnative::api::Area2D;
+use gdnative::api::RandomNumberGenerator;
+use gdnative::prelude::*;
 
 #[derive(NativeClass)]
 #[inherit(Node2D)]
 pub struct Enemy {
-    sprite: Option<Sprite>,
-    explode: Option<Node2D>,
+    sprite: Option<Ref<Sprite>>,
+    explode: Option<Ref<Node2D, Unique>>,
     speed: u16,
 }
 
@@ -22,7 +24,7 @@ const SPRITES: &'static [&'static str] = &[
 
 #[methods]
 impl Enemy {
-    fn _init(_owner: gdnative::Node2D) -> Self {
+    fn new(_owner: &Node2D) -> Self {
         Enemy {
             speed: 100,
             sprite: None,
@@ -31,68 +33,97 @@ impl Enemy {
     }
 
     #[export]
-    unsafe fn _ready(&mut self, owner: gdnative::Node2D) {
-        let mut resource_loader = ResourceLoader::godot_singleton();
-        self.explode = resource_loader
-            .load("res://Explosion.tscn".into(), "".into(), false)
-            .and_then(|res| res.cast::<PackedScene>())
-            .and_then(|packed_scene| packed_scene.instance(0))
-            .map(|scene| scene.cast::<Node2D>())
-            .expect("Could not load explosion");
+    fn _ready(&self, owner: &Node2D) {
+        let resource_loader = ResourceLoader::godot_singleton();
+        let explosion_scene = resource_loader
+            .load("res://Explosion.tscn", "PackedScene", false)
+            .expect("Could not load scene");
 
-        let rust_game_state: Instance<GameState> = owner
-            .get_tree()
-            .and_then(|tree| tree.get_root())
-            .and_then(|root| root.get_node("./rustGameState".into()))
-            .and_then(|node| Instance::try_from_base(node))
-            .expect("Failed to get game state instance");
+        let explosion_scene = unsafe { explosion_scene.assume_thread_local() };
 
-        self.speed = self.speed + rust_game_state.map(|gs, _| gs.current_stage).unwrap_or(1) * 10;
+        // Optional<Ref<Node, Shared>>
+        //
+        let explosion_node = explosion_scene
+            .cast::<PackedScene>()
+            .and_then(|packed_scene| packed_scene.instance(PackedScene::GEN_EDIT_STATE_DISABLED))
+            .expect("Could not create instance of scene");
+
+        let explosion_node = unsafe { explosion_node.assume_unique() };
+        self.explode = explosion_node.try_cast::<Node2D>().ok();
+
+        if let Some(tree) = owner.get_tree() {
+            let tree = unsafe { tree.assume_safe() };
+            if let Some(root) = tree.root() {
+                let root = unsafe { root.assume_safe() };
+                if let Some(node) = root.get_node("./rustGameState") {
+                    let rust_game_state_instance = Instance::<GameState, _>::try_from_base(node);
+
+                    let speed = match &rust_game_state_instance {
+                        Ok(instance) => {
+                            let instance = unsafe { instance.assume_safe() };
+                            instance.map(|gs, _| gs.current_stage).unwrap_or(1)
+                        }
+                        Err(_) => panic!("Oh damn"),
+                    };
+                    self.speed = self.speed + (speed * 10)
+                }
+            }
+        }
     }
 
     #[export]
-    unsafe fn _process(&self, mut owner: Node2D, delta: f64) {
+    fn _process(&self, owner: &Node2D, delta: f64) {
         owner.move_local_x(-delta * self.speed as f64, false);
     }
 
     #[export]
-    unsafe fn _enter_tree(&mut self, mut owner: Node2D) {
-        let mut generator = RandomNumberGenerator::new();
+    fn _enter_tree(&self, owner: &Node2D) {
+        let generator = RandomNumberGenerator::new();
         generator.randomize();
-        let mut sprite = Sprite::new();
+        let sprite = Sprite::new().into_shared();
+        let sprite = unsafe { sprite.assume_safe() };
         let sprite_name = format!(
             "res://assets/graphics/enemies/{}",
             SPRITES[generator.randi() as usize % SPRITES.len()]
         );
-        let mut resource_loader = ResourceLoader::godot_singleton();
+        let resource_loader = ResourceLoader::godot_singleton();
         let texture = resource_loader
-            .load(sprite_name.into(), "".into(), false)
-            .and_then(|res| res.cast::<Texture>());
+            .load(sprite_name, "", false)
+            .and_then(|res| res.cast::<Texture>())
+            .expect("Couldn't load sprite texture");
 
         sprite.set_texture(texture);
-        owner.add_child(Some(sprite.to_node()), false);
-        self.sprite = Some(sprite);
+        self.sprite = Some(sprite.claim());
+        owner.add_child(sprite, false);
     }
 
     #[export]
-    unsafe fn _on_area2d_area_entered(&self, mut owner: Node2D, area: Area2D) {
+    fn _on_area2d_area_entered(&self, owner: &Node2D, area: Ref<Area2D>) {
+        let area = unsafe { area.assume_safe() };
         if area.get_collision_layer_bit(3) {
-            if let Some(mut explode) = self.explode {
-                let position = owner.get_position();
+            if let Some(explode) = self.explode {
+                let position = owner.position();
                 explode.set_position(position);
-                if let Some(mut parent_node) = owner.get_parent() {
-                    parent_node.add_child(Some(explode.to_node()), false);
+                if let Some(parent_node) = owner.get_parent() {
+                    let parent_node = unsafe { parent_node.assume_safe() };
+                    parent_node.add_child(explode, false);
                 }
-                let rust_game_state: Instance<GameState> = owner
-                    .get_tree()
-                    .and_then(|tree| tree.get_root())
-                    .and_then(|root| root.get_node("./rustGameState".into()))
-                    .and_then(|node| Instance::try_from_base(node))
-                    .expect("Failed to get game state instance");
 
-                rust_game_state
-                    .map_mut(|gs, _| gs.increment_kills())
-                    .expect("Couldn't access gamestate!");
+                if let Some(tree) = owner.get_tree() {
+                    let tree = { tree.assume_safe() };
+
+                    let root = tree.root().expect("couldn't find tree root?");
+                    let root = { root.assume_safe() };
+
+                    let node = root
+                        .get_node("./rustGameState")
+                        .expect("couldn't get node.");
+                    let rsi = Instance::<GameState, _>::try_from_base(node)
+                        .expect("couldn't convert instance");
+
+                    rsi.map_mut(|gs, _| gs.increment_kills())
+                        .expect("couldn't access game state");
+                }
                 owner.queue_free();
             }
         }
