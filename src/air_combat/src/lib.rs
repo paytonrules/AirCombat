@@ -1,4 +1,4 @@
-use gdnative::*;
+use gdnative::prelude::*;
 mod bullet;
 mod enemy;
 mod game_scene;
@@ -6,7 +6,7 @@ mod game_state;
 mod player;
 mod title_screen;
 
-fn init(handle: gdnative::init::InitHandle) {
+fn init(handle: InitHandle) {
     handle.add_class::<bullet::Bullet>();
     handle.add_class::<title_screen::TitleScreen>();
     handle.add_class::<game_state::GameState>();
@@ -15,6 +15,4 @@ fn init(handle: gdnative::init::InitHandle) {
     handle.add_class::<enemy::Enemy>();
 }
 
-godot_gdnative_init!();
-godot_nativescript_init!(init);
-godot_gdnative_terminate!();
+godot_init!(init);
