@@ -46,6 +46,7 @@ impl GameScene {
 
             let node = root
                 .get_node("./rustGameState")
+                .map(|node| unsafe { node.assume_unique() })
                 .expect("couldn't get node.");
 
             let rsi =
@@ -84,6 +85,7 @@ impl GameScene {
 
             let node = root
                 .get_node("./rustGameState")
+                .map(|node| unsafe { node.assume_unique() })
                 .expect("couldn't get node.");
 
             let rsi =
@@ -139,7 +141,7 @@ impl GameScene {
     }
 
     #[export]
-    unsafe fn _on_area2d_area_entered(&self, owner: &Node2D, area: Ref<Area2D>) {
+    fn _on_area2d_area_entered(&self, owner: &Node2D, area: Ref<Area2D>) {
         let rust_game_state = owner
             .get_tree()
             .and_then(|tree| {
@@ -150,7 +152,10 @@ impl GameScene {
                 let root = unsafe { root.assume_safe() };
                 root.get_node("./rustGameState")
             })
-            .and_then(|node| Instance::<GameState, _>::try_from_base(node))
+            .and_then(|node| {
+                let node = unsafe { node.assume_unique() };
+                Instance::<GameState, _>::try_from_base(node).ok()
+            })
             .expect("Failed to get game state instance");
 
         let area = unsafe { area.assume_safe() };
@@ -158,7 +163,10 @@ impl GameScene {
             if self.state == State::Running {
                 let player_instance = self
                     .player
-                    .and_then(|pl| Instance::<Player, _>::try_from_base(pl))
+                    .and_then(|pl| {
+                        let pl = unsafe { pl.assume_unique() };
+                        Instance::<Player, _>::try_from_base(pl).ok()
+                    })
                     .expect("Could not covert player to player instance!");
 
                 player_instance
@@ -234,7 +242,10 @@ impl GameScene {
                 let root = unsafe { root.assume_safe() };
                 root.get_node("./rustGameState")
             })
-            .and_then(|node| Instance::<GameState, _>::try_from_base(node))
+            .and_then(|node| {
+                let node = unsafe { node.assume_unique() };
+                Instance::<GameState, _>::try_from_base(node).ok()
+            })
             .expect("Failed to get game state instance");
 
         let mut generator = RandomNumberGenerator::new();
