@@ -21,6 +21,7 @@ pub struct GameScene {
 #[methods]
 impl GameScene {
     fn new(_owner: &Node2D) -> Self {
+        godot_print!("New game scene!");
         GameScene {
             state: State::Loading,
             enemy_obj: None,
@@ -30,7 +31,7 @@ impl GameScene {
     }
 
     #[export]
-    fn _ready(&self, owner: &Node2D) {
+    fn _ready(&mut self, owner: &Node2D) {
         let resource_loader = ResourceLoader::godot_singleton();
         let enemy_scene = resource_loader
             .load("res://Enemy.tscn", "PackedScene", false)
@@ -39,10 +40,10 @@ impl GameScene {
         self.enemy_obj = enemy_scene.cast::<PackedScene>();
 
         if let Some(tree) = owner.get_tree() {
-            let tree = { tree.assume_safe() };
+            let tree = unsafe { tree.assume_safe() };
 
             let root = tree.root().expect("couldn't find tree root?");
-            let root = { root.assume_safe() };
+            let root = unsafe { root.assume_safe() };
 
             let node = root
                 .get_node("./rustGameState")
@@ -78,10 +79,10 @@ impl GameScene {
     #[export]
     fn _process(&self, owner: &Node2D, _delta: f64) {
         if let Some(tree) = owner.get_tree() {
-            let tree = { tree.assume_safe() };
+            let tree = unsafe { tree.assume_safe() };
 
             let root = tree.root().expect("couldn't find tree root?");
-            let root = { root.assume_safe() };
+            let root = unsafe { root.assume_safe() };
 
             let node = root
                 .get_node("./rustGameState")
@@ -107,7 +108,7 @@ impl GameScene {
     }
 
     #[export]
-    fn start_animation_done(&self, owner: &Node2D) {
+    fn start_animation_done(&mut self, owner: &Node2D) {
         self.stage_label.map(|label| {
             let label = unsafe { label.assume_safe() };
             label.set_visible(false)
@@ -154,7 +155,7 @@ impl GameScene {
             })
             .and_then(|node| {
                 let node = unsafe { node.assume_unique() };
-                Instance::<GameState, _>::try_from_base(node).ok()
+                Instance::<GameState, _>::from_base(node)
             })
             .expect("Failed to get game state instance");
 
@@ -165,7 +166,7 @@ impl GameScene {
                     .player
                     .and_then(|pl| {
                         let pl = unsafe { pl.assume_unique() };
-                        Instance::<Player, _>::try_from_base(pl).ok()
+                        Instance::<Player, _>::from_base(pl)
                     })
                     .expect("Could not covert player to player instance!");
 
@@ -185,7 +186,7 @@ impl GameScene {
         }
     }
 
-    pub fn player_died(&self) {
+    pub fn player_died(&mut self) {
         if let Some(player) = self.player {
             let player = unsafe { player.assume_safe() };
             for var in player.get_children().iter() {
@@ -215,7 +216,7 @@ impl GameScene {
         self.state = State::GameOver;
     }
 
-    fn spawn_enemy(&self, owner: &Node2D, x: f32, y: f32) {
+    fn spawn_enemy(&mut self, owner: &Node2D, x: f32, y: f32) {
         if let Some(enemy_obj) = self.enemy_obj.take() {
             let enemy_obj = unsafe { enemy_obj.assume_safe() };
             let enemy = enemy_obj
@@ -231,7 +232,7 @@ impl GameScene {
         }
     }
 
-    fn spawn_enemies(&self, owner: &Node2D) {
+    fn spawn_enemies(&mut self, owner: &Node2D) {
         let rust_game_state = owner
             .get_tree()
             .and_then(|tree| {
@@ -248,7 +249,7 @@ impl GameScene {
             })
             .expect("Failed to get game state instance");
 
-        let mut generator = RandomNumberGenerator::new();
+        let generator = RandomNumberGenerator::new();
         generator.randomize();
         let current_stage = rust_game_state
             .map(|gs, _| gs.current_stage)

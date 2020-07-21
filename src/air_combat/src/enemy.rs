@@ -7,7 +7,7 @@ use gdnative::prelude::*;
 #[inherit(Node2D)]
 pub struct Enemy {
     sprite: Option<Ref<Sprite>>,
-    explode: Option<Ref<Node2D, Unique>>,
+    explode: Option<Ref<Node2D>>,
     speed: u16,
 }
 
@@ -33,7 +33,7 @@ impl Enemy {
     }
 
     #[export]
-    fn _ready(&self, owner: &Node2D) {
+    fn _ready(&mut self, owner: &Node2D) {
         let resource_loader = ResourceLoader::godot_singleton();
         let explosion_scene = resource_loader
             .load("res://Explosion.tscn", "PackedScene", false)
@@ -49,25 +49,24 @@ impl Enemy {
             .expect("Could not create instance of scene");
 
         let explosion_node = unsafe { explosion_node.assume_unique() };
-        self.explode = explosion_node.try_cast::<Node2D>().ok();
+        self.explode = explosion_node
+            .cast::<Node2D>()
+            .map(|node| node.into_shared());
 
         if let Some(tree) = owner.get_tree() {
             let tree = unsafe { tree.assume_safe() };
-            if let Some(root) = tree.root() {
-                let root = unsafe { root.assume_safe() };
-                if let Some(node) = root.get_node("./rustGameState") {
-                    let rust_game_state_instance = Instance::<GameState, _>::try_from_base(node);
 
-                    let speed = match &rust_game_state_instance {
-                        Ok(instance) => {
-                            let instance = unsafe { instance.assume_safe() };
-                            instance.map(|gs, _| gs.current_stage).unwrap_or(1)
-                        }
-                        Err(_) => panic!("Oh damn"),
-                    };
-                    self.speed = self.speed + (speed * 10)
-                }
-            }
+            let root = tree.root().expect("couldn't find tree root?");
+            let root = unsafe { root.assume_safe() };
+
+            let node = root
+                .get_node("./rustGameState")
+                .expect("couldn't get node.");
+            let node = unsafe { node.assume_unique() };
+            let rsi =
+                Instance::<GameState, _>::try_from_base(node).expect("couldn't convert instance");
+
+            self.speed = self.speed + (rsi.map(|gs, _| gs.current_stage).unwrap_or(1) * 10)
         }
     }
 
@@ -77,7 +76,7 @@ impl Enemy {
     }
 
     #[export]
-    fn _enter_tree(&self, owner: &Node2D) {
+    fn _enter_tree(&mut self, owner: &Node2D) {
         let generator = RandomNumberGenerator::new();
         generator.randomize();
         let sprite = Sprite::new().into_shared();
@@ -98,34 +97,36 @@ impl Enemy {
     }
 
     #[export]
-    fn _on_area2d_area_entered(&self, owner: &Node2D, area: Ref<Area2D>) {
+    fn _on_area2d_area_entered(&mut self, owner: &Node2D, area: Ref<Area2D>) {
         let area = unsafe { area.assume_safe() };
         if area.get_collision_layer_bit(3) {
             if let Some(explode) = self.explode {
+                let explode = unsafe { explode.assume_safe() };
                 let position = owner.position();
                 explode.set_position(position);
                 if let Some(parent_node) = owner.get_parent() {
                     let parent_node = unsafe { parent_node.assume_safe() };
                     parent_node.add_child(explode, false);
                 }
-
-                if let Some(tree) = owner.get_tree() {
-                    let tree = { tree.assume_safe() };
-
-                    let root = tree.root().expect("couldn't find tree root?");
-                    let root = { root.assume_safe() };
-
-                    let node = root
-                        .get_node("./rustGameState")
-                        .expect("couldn't get node.");
-                    let rsi = Instance::<GameState, _>::try_from_base(node)
-                        .expect("couldn't convert instance");
-
-                    rsi.map_mut(|gs, _| gs.increment_kills())
-                        .expect("couldn't access game state");
-                }
-                owner.queue_free();
             }
+
+            if let Some(tree) = owner.get_tree() {
+                let tree = unsafe { tree.assume_safe() };
+
+                let root = tree.root().expect("couldn't find tree root?");
+                let root = unsafe { root.assume_safe() };
+
+                let node = root
+                    .get_node("./rustGameState")
+                    .expect("couldn't get node.");
+                let node = unsafe { node.assume_unique() };
+                let rsi = Instance::<GameState, _>::try_from_base(node)
+                    .expect("couldn't convert instance");
+
+                rsi.map_mut(|gs, _| gs.increment_kills())
+                    .expect("couldn't access game state");
+            }
+            owner.queue_free();
         }
     }
 }
