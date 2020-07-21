@@ -1,4 +1,5 @@
-use gdnative::*;
+use gdnative::api::Area2D;
+use gdnative::prelude::*;
 
 #[derive(NativeClass)]
 #[inherit(Node2D)]
@@ -6,19 +7,20 @@ pub struct Bullet;
 
 #[methods]
 impl Bullet {
-    fn _init(_owner: gdnative::Node2D) -> Self {
+    fn new(_owner: &Node2D) -> Self {
         Bullet
     }
 
     #[export]
-    unsafe fn _on_area2d_area_entered(&self, mut owner: gdnative::Node2D, area: gdnative::Area2D) {
+    fn _on_area2d_area_entered(&self, owner: &Node2D, area: Ref<Area2D>) {
+        let area = unsafe { area.assume_safe() };
         if area.get_collision_layer_bit(2) {
             owner.queue_free();
         }
     }
 
     #[export]
-    unsafe fn _process(&self, mut owner: gdnative::Node2D, delta: f64) {
+    fn _process(&self, owner: &Node2D, delta: f64) {
         owner.move_local_x(delta * 400.0, false)
     }
 }
