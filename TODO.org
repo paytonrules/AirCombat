@@ -1,9 +1,11 @@
 #+TITLE: Get Ready for godot-rust 0.9
 
-* TODO Get compiling
-* TODO Fix bugs
+* DONE Get compiling
+* DONE Fix bugs
 * TODO Make a helper function for getting rust game state
 - This can be a blog
-* TODO Find every unsafe on a function, and every unneeded mut
+* DONE Find every unsafe on a function, and every unneeded mut
 * TODO See if you can use less unsafe blocks everywhere
 * TODO Restore chains of ~and_then~ where useful
+* TODO Run rust-clippy
+* TODO Update Readme
