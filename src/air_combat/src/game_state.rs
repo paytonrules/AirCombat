@@ -1,4 +1,4 @@
-use gdnative::*;
+use gdnative::prelude::*;
 
 #[derive(NativeClass)]
 #[inherit(Node)]
@@ -9,7 +9,7 @@ pub struct GameState {
 
 #[methods]
 impl GameState {
-    fn _init(_owner: gdnative::Node) -> Self {
+    fn new(_owner: &Node) -> Self {
         GameState {
             kills: 0,
             current_stage: 1,
@@ -17,18 +17,18 @@ impl GameState {
     }
 
     #[export]
-    pub fn reset(&mut self, _owner: gdnative::Node) {
+    pub fn reset(&mut self, _owner: &Node) {
         self.kills = 0;
         self.current_stage = 1;
     }
 
     #[export]
-    fn current_stage(&self, _owner: gdnative::Node) -> u16 {
+    fn current_stage(&self, _owner: &Node) -> u16 {
         self.current_stage
     }
 
     #[export]
-    fn kills(&self, _owner: gdnative::Node) -> u16 {
+    fn kills(&self, _owner: &Node) -> u16 {
         self.kills
     }
 

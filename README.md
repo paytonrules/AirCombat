@@ -1,6 +1,6 @@
 # AirCombat
 
-This is a port of this [Godot Tutorial](https://devga.me/tutorials/godot2d/getting-started-with-godot/) to Rust. I've done a write-up of the entire process on [my blog](https://paytonrules.com/post/games-in-rust-with-godot-part-one/) but you're welcome to just clone and run the app if you so choose. 
+This is a port of this [Godot Tutorial](https://devga.me/tutorials/godot2d/getting-started-with-godot/) to Rust. I started a write-up of the entire process on [my blog](https://paytonrules.com/post/games-in-rust-with-godot-part-one/), unfortuantely godot-rust created a large number of breaking changes while I was writing part 2, so that has been scrapped in favor of a new writeup that....doesn't exist yet.
 
 ## Requirements
 
