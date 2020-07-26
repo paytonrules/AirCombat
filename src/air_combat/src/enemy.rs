@@ -1,4 +1,4 @@
-use crate::game_state::GameState;
+use crate::game_state::load_game_state;
 use gdnative::api::Area2D;
 use gdnative::api::RandomNumberGenerator;
 use gdnative::prelude::*;
@@ -39,10 +39,8 @@ impl Enemy {
             .load("res://Explosion.tscn", "PackedScene", false)
             .expect("Could not load scene");
 
-        let explosion_scene = unsafe { explosion_scene.assume_thread_local() };
+        let explosion_scene = unsafe { explosion_scene.assume_safe() };
 
-        // Optional<Ref<Node, Shared>>
-        //
         let explosion_node = explosion_scene
             .cast::<PackedScene>()
             .and_then(|packed_scene| packed_scene.instance(PackedScene::GEN_EDIT_STATE_DISABLED))
@@ -53,20 +51,9 @@ impl Enemy {
             .cast::<Node2D>()
             .map(|node| node.into_shared());
 
-        if let Some(tree) = owner.get_tree() {
-            let tree = unsafe { tree.assume_safe() };
-
-            let root = tree.root().expect("couldn't find tree root?");
-            let root = unsafe { root.assume_safe() };
-
-            let node = root
-                .get_node("./rustGameState")
-                .expect("couldn't get node.");
-            let node = unsafe { node.assume_unique() };
-            let rsi =
-                Instance::<GameState, _>::try_from_base(node).expect("couldn't convert instance");
-
-            self.speed = self.speed + (rsi.map(|gs, _| gs.current_stage).unwrap_or(1) * 10)
+        if let Some(rust_game_state) = load_game_state(owner) {
+            self.speed =
+                self.speed + (rust_game_state.map(|gs, _| gs.current_stage).unwrap_or(1) * 10)
         }
     }
 
@@ -110,22 +97,10 @@ impl Enemy {
                 }
             }
 
-            if let Some(tree) = owner.get_tree() {
-                let tree = unsafe { tree.assume_safe() };
-
-                let root = tree.root().expect("couldn't find tree root?");
-                let root = unsafe { root.assume_safe() };
-
-                let node = root
-                    .get_node("./rustGameState")
-                    .expect("couldn't get node.");
-                let node = unsafe { node.assume_unique() };
-                let rsi = Instance::<GameState, _>::try_from_base(node)
-                    .expect("couldn't convert instance");
-
-                rsi.map_mut(|gs, _| gs.increment_kills())
-                    .expect("couldn't access game state");
-            }
+            let rust_game_state = load_game_state(owner).expect("couldn't access game state");
+            rust_game_state
+                .map_mut(|gs, _| gs.increment_kills())
+                .expect("couldn't access game state");
             owner.queue_free();
         }
     }

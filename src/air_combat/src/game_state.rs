@@ -40,3 +40,16 @@ impl GameState {
         self.kills += 1;
     }
 }
+
+pub fn load_game_state(node: &Node) -> Option<Instance<GameState, Unique>> {
+    let tree = node.get_tree()?;
+    let tree = unsafe { tree.assume_safe() };
+
+    let root = tree.root()?;
+    let root = unsafe { root.assume_safe() };
+
+    let game_state_node = root.get_node("./rustGameState")?;
+    let game_state_node = unsafe { game_state_node.assume_unique() };
+
+    Instance::<GameState, _>::from_base(game_state_node)
+}

@@ -1,4 +1,4 @@
-use crate::{game_scene, game_state::GameState};
+use crate::{game_scene, game_state::load_game_state};
 use euclid::Vector2D;
 use gdnative::prelude::*;
 
@@ -154,22 +154,7 @@ impl Player {
 
     #[export]
     fn explode(&mut self, owner: &Node2D) {
-        let rust_game_state = owner
-            .get_tree()
-            .and_then(|tree| {
-                let tree = unsafe { tree.assume_safe() };
-
-                tree.root()
-            })
-            .and_then(|root| {
-                let root = unsafe { root.assume_safe() };
-                root.get_node("./rustGameState")
-            })
-            .and_then(|node| {
-                let node = unsafe { node.assume_unique() };
-                Instance::<GameState, _>::try_from_base(node).ok()
-            })
-            .expect("Failed to get game state instance");
+        let rust_game_state = load_game_state(owner).expect("Failed to get game state instance");
 
         rust_game_state
             .map_mut(|gs, _| gs.increment_kills())

@@ -1,4 +1,4 @@
-use crate::game_state::GameState;
+use crate::game_state::load_game_state;
 use crate::player::Player;
 use gdnative::api::{AnimationPlayer, Area2D, Camera2D, RandomNumberGenerator};
 use gdnative::prelude::*;
@@ -21,7 +21,6 @@ pub struct GameScene {
 #[methods]
 impl GameScene {
     fn new(_owner: &Node2D) -> Self {
-        godot_print!("New game scene!");
         GameScene {
             state: State::Loading,
             enemy_obj: None,
@@ -39,21 +38,8 @@ impl GameScene {
         let enemy_scene = unsafe { enemy_scene.assume_safe().claim() };
         self.enemy_obj = enemy_scene.cast::<PackedScene>();
 
-        if let Some(tree) = owner.get_tree() {
-            let tree = unsafe { tree.assume_safe() };
-
-            let root = tree.root().expect("couldn't find tree root?");
-            let root = unsafe { root.assume_safe() };
-
-            let node = root
-                .get_node("./rustGameState")
-                .map(|node| unsafe { node.assume_unique() })
-                .expect("couldn't get node.");
-
-            let rsi =
-                Instance::<GameState, _>::try_from_base(node).expect("couldn't convert instance");
-
-            let label_text = rsi
+        if let Some(rust_game_state) = load_game_state(owner) {
+            let label_text = rust_game_state
                 .map_mut(|gs, _| format!("Stage {}", gs.current_stage))
                 .expect("Couldn't build label text");
 
@@ -78,20 +64,7 @@ impl GameScene {
 
     #[export]
     fn _process(&self, owner: &Node2D, _delta: f64) {
-        if let Some(tree) = owner.get_tree() {
-            let tree = unsafe { tree.assume_safe() };
-
-            let root = tree.root().expect("couldn't find tree root?");
-            let root = unsafe { root.assume_safe() };
-
-            let node = root
-                .get_node("./rustGameState")
-                .map(|node| unsafe { node.assume_unique() })
-                .expect("couldn't get node.");
-
-            let rsi =
-                Instance::<GameState, _>::try_from_base(node).expect("couldn't convert instance");
-
+        if let Some(rust_game_state) = load_game_state(owner) {
             let hud_kills = owner
                 .get_node("./HUD/Kills")
                 .expect("Could not load HUD/Kills node");
@@ -100,7 +73,7 @@ impl GameScene {
                 .cast::<Label>()
                 .expect("Could not cast hud kills to Label");
 
-            let hud_text = rsi
+            let hud_text = rust_game_state
                 .map_mut(|gs, _| format!("Kills: {}", gs.kills))
                 .expect("Couldn't create hud text");
             hud_kills.set_text(hud_text);
@@ -143,21 +116,7 @@ impl GameScene {
 
     #[export]
     fn _on_area2d_area_entered(&self, owner: &Node2D, area: Ref<Area2D>) {
-        let rust_game_state = owner
-            .get_tree()
-            .and_then(|tree| {
-                let tree = unsafe { tree.assume_safe() };
-                tree.root()
-            })
-            .and_then(|root| {
-                let root = unsafe { root.assume_safe() };
-                root.get_node("./rustGameState")
-            })
-            .and_then(|node| {
-                let node = unsafe { node.assume_unique() };
-                Instance::<GameState, _>::from_base(node)
-            })
-            .expect("Failed to get game state instance");
+        let rust_game_state = load_game_state(owner).expect("Failed to get game state instance");
 
         let area = unsafe { area.assume_safe() };
         if area.get_collision_layer_bit(4) {
@@ -233,21 +192,7 @@ impl GameScene {
     }
 
     fn spawn_enemies(&mut self, owner: &Node2D) {
-        let rust_game_state = owner
-            .get_tree()
-            .and_then(|tree| {
-                let tree = unsafe { tree.assume_safe() };
-                tree.root()
-            })
-            .and_then(|root| {
-                let root = unsafe { root.assume_safe() };
-                root.get_node("./rustGameState")
-            })
-            .and_then(|node| {
-                let node = unsafe { node.assume_unique() };
-                Instance::<GameState, _>::try_from_base(node).ok()
-            })
-            .expect("Failed to get game state instance");
+        let rust_game_state = load_game_state(owner).expect("Failed to get game state instance");
 
         let generator = RandomNumberGenerator::new();
         generator.randomize();

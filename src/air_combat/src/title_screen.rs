@@ -13,21 +13,8 @@ impl TitleScreen {
 
     #[export]
     fn _ready(&self, owner: &Node) {
-        let rust_game_state = owner
-            .get_tree()
-            .and_then(|tree| {
-                let tree = unsafe { tree.assume_safe() };
-                tree.root()
-            })
-            .and_then(|root| {
-                let root = unsafe { root.assume_safe() };
-                root.get_node("./rustGameState")
-            })
-            .and_then(|node| {
-                let node = unsafe { node.assume_unique() };
-                Instance::<game_state::GameState, _>::from_base(node)
-            })
-            .expect("Failed to get game state instance");
+        let rust_game_state =
+            game_state::load_game_state(owner).expect("Failed to get game state instance");
 
         rust_game_state
             .map_mut(|gs, o| gs.reset(&o))
