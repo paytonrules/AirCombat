@@ -1,4 +1,5 @@
 use crate::game_state::load_game_state;
+use crate::util::create_node_from_scene;
 use gdnative::api::Area2D;
 use gdnative::api::RandomNumberGenerator;
 use gdnative::prelude::*;
@@ -34,22 +35,7 @@ impl Enemy {
 
     #[export]
     fn _ready(&mut self, owner: &Node2D) {
-        let resource_loader = ResourceLoader::godot_singleton();
-        let explosion_scene = resource_loader
-            .load("res://Explosion.tscn", "PackedScene", false)
-            .expect("Could not load scene");
-
-        let explosion_scene = unsafe { explosion_scene.assume_safe() };
-
-        let explosion_node = explosion_scene
-            .cast::<PackedScene>()
-            .and_then(|packed_scene| packed_scene.instance(PackedScene::GEN_EDIT_STATE_DISABLED))
-            .expect("Could not create instance of scene");
-
-        let explosion_node = unsafe { explosion_node.assume_unique() };
-        self.explode = explosion_node
-            .cast::<Node2D>()
-            .map(|node| node.into_shared());
+        self.explode = create_node_from_scene("res://Explosion.tscn");
 
         if let Some(rust_game_state) = load_game_state(owner) {
             self.speed =

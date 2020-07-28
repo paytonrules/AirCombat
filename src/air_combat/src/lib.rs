@@ -5,6 +5,7 @@ mod game_scene;
 mod game_state;
 mod player;
 mod title_screen;
+mod util;
 
 fn init(handle: InitHandle) {
     handle.add_class::<bullet::Bullet>();
