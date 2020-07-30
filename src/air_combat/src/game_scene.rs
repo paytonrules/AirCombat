@@ -1,6 +1,6 @@
 use crate::game_state::load_game_state;
 use crate::player::Player;
-use crate::util::load_scene;
+use crate::util::{get_typed_node, load_scene};
 use gdnative::api::{AnimationPlayer, Area2D, Camera2D, RandomNumberGenerator};
 use gdnative::prelude::*;
 
@@ -34,46 +34,40 @@ impl GameScene {
     fn _ready(&mut self, owner: &Node2D) {
         self.enemy_obj = load_scene("res://Enemy.tscn", |scene| Some(scene.claim()));
 
-        if let Some(rust_game_state) = load_game_state(owner) {
-            let label_text = rust_game_state
-                .map_mut(|gs, _| format!("Stage {}", gs.current_stage))
-                .expect("Couldn't build label text");
+        let rust_game_state = match load_game_state(owner) {
+            Some(it) => it,
+            _ => return,
+        };
 
-            if let Some(stage_label) = owner.get_node("./Label") {
-                let stage_label = unsafe { stage_label.assume_safe() };
-
-                if let Some(stage_label) = stage_label.cast::<Label>() {
+        get_typed_node::<Label, _>("./Label", owner, |stage_label| {
+            rust_game_state
+                .map_mut(|gs, _| {
+                    let label_text = format!("Stage {}", gs.current_stage);
                     stage_label.set_text(label_text);
-                    self.stage_label = Some(stage_label.claim());
-                }
-            }
+                })
+                .expect_err("Couldn't get current stage from game state");
 
-            let animation_player = owner
-                .get_node("./AnimationPlayer")
-                .expect("Couldn't find animation player");
-            let animation_player = unsafe { animation_player.assume_safe() };
-            if let Some(animation_player) = animation_player.cast::<AnimationPlayer>() {
-                animation_player.play("Stage Display", -1.0, 1.0, false);
-            }
-        }
+            self.stage_label = Some(stage_label.claim());
+        });
+
+        get_typed_node::<AnimationPlayer, _>("./AnimationPlayer", owner, |player| {
+            player.play("Stage Display", -1.0, 1.0, false);
+        });
     }
 
     #[export]
     fn _process(&self, owner: &Node2D, _delta: f64) {
-        if let Some(rust_game_state) = load_game_state(owner) {
-            let hud_kills = owner
-                .get_node("./HUD/Kills")
-                .expect("Could not load HUD/Kills node");
-            let hud_kills = unsafe { hud_kills.assume_safe() };
-            let hud_kills = hud_kills
-                .cast::<Label>()
-                .expect("Could not cast hud kills to Label");
+        let rust_game_state = match load_game_state(owner) {
+            Some(it) => it,
+            _ => return,
+        };
 
+        get_typed_node::<Label, _>("./HUD/Kills", owner, |hud_kills| {
             let hud_text = rust_game_state
                 .map_mut(|gs, _| format!("Kills: {}", gs.kills))
                 .expect("Couldn't create hud text");
             hud_kills.set_text(hud_text);
-        }
+        });
     }
 
     #[export]

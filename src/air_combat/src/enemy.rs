@@ -52,42 +52,46 @@ impl Enemy {
     fn _enter_tree(&mut self, owner: &Node2D) {
         let generator = RandomNumberGenerator::new();
         generator.randomize();
-        let sprite = Sprite::new().into_shared();
-        let sprite = unsafe { sprite.assume_safe() };
+        let sprite = Sprite::new();
         let sprite_name = format!(
             "res://assets/graphics/enemies/{}",
             SPRITES[generator.randi() as usize % SPRITES.len()]
         );
         let resource_loader = ResourceLoader::godot_singleton();
         let texture = resource_loader
-            .load(sprite_name, "", false)
+            .load(sprite_name, "Texture", false)
             .and_then(|res| res.cast::<Texture>())
             .expect("Couldn't load sprite texture");
 
         sprite.set_texture(texture);
-        self.sprite = Some(sprite.claim());
-        owner.add_child(sprite, false);
+        let shared_sprite = sprite.into_shared();
+        self.sprite = Some(shared_sprite);
+        owner.add_child(shared_sprite, false);
     }
 
     #[export]
     fn _on_area2d_area_entered(&mut self, owner: &Node2D, area: Ref<Area2D>) {
         let area = unsafe { area.assume_safe() };
         if area.get_collision_layer_bit(3) {
-            if let Some(explode) = self.explode {
-                let explode = unsafe { explode.assume_safe() };
-                let position = owner.position();
-                explode.set_position(position);
-                if let Some(parent_node) = owner.get_parent() {
-                    let parent_node = unsafe { parent_node.assume_safe() };
-                    parent_node.add_child(explode, false);
-                }
-            }
+            self.set_explosion_position(owner);
 
             let rust_game_state = load_game_state(owner).expect("couldn't access game state");
             rust_game_state
                 .map_mut(|gs, _| gs.increment_kills())
                 .expect("couldn't access game state");
             owner.queue_free();
+        }
+    }
+
+    fn set_explosion_position(&mut self, owner: &Node2D) {
+        if let Some(explode) = self.explode {
+            let explode = unsafe { explode.assume_safe() };
+            let position = owner.position();
+            explode.set_position(position);
+            if let Some(parent_node) = owner.get_parent() {
+                let parent_node = unsafe { parent_node.assume_safe() };
+                parent_node.add_child(explode, false);
+            }
         }
     }
 }
