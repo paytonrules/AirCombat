@@ -1,5 +1,6 @@
 use crate::game_state::load_game_state;
 use crate::player::Player;
+use crate::util::load_scene;
 use gdnative::api::{AnimationPlayer, Area2D, Camera2D, RandomNumberGenerator};
 use gdnative::prelude::*;
 
@@ -31,12 +32,7 @@ impl GameScene {
 
     #[export]
     fn _ready(&mut self, owner: &Node2D) {
-        let resource_loader = ResourceLoader::godot_singleton();
-        let enemy_scene = resource_loader
-            .load("res://Enemy.tscn", "PackedScene", false)
-            .expect("Could not load enemy scene");
-        let enemy_scene = unsafe { enemy_scene.assume_safe().claim() };
-        self.enemy_obj = enemy_scene.cast::<PackedScene>();
+        self.enemy_obj = load_scene("res://Enemy.tscn", |scene| Some(scene.claim()));
 
         if let Some(rust_game_state) = load_game_state(owner) {
             let label_text = rust_game_state

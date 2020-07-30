@@ -35,7 +35,7 @@ impl Enemy {
 
     #[export]
     fn _ready(&mut self, owner: &Node2D) {
-        self.explode = create_node_from_scene("res://Explosion.tscn");
+        self.explode = create_node_from_scene::<Node2D>("res://Explosion.tscn");
 
         if let Some(rust_game_state) = load_game_state(owner) {
             self.speed =
