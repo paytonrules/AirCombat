@@ -38,15 +38,12 @@ impl GameScene {
             Some(it) => it,
             _ => return,
         };
+        let label_text = rust_game_state
+            .map_mut(|gs, _| format!("Stage {}", gs.current_stage))
+            .expect("Couldn't build label text");
 
         get_typed_node::<Label, _>("./Label", owner, |stage_label| {
-            rust_game_state
-                .map_mut(|gs, _| {
-                    let label_text = format!("Stage {}", gs.current_stage);
-                    stage_label.set_text(label_text);
-                })
-                .expect_err("Couldn't get current stage from game state");
-
+            stage_label.set_text(&label_text);
             self.stage_label = Some(stage_label.claim());
         });
 
@@ -176,6 +173,7 @@ impl GameScene {
                 })
                 .expect("Could not create enemy instance!");
             enemy.set_position(euclid::Vector2D::new(x, y));
+
             owner.add_child(enemy, false);
             self.enemy_obj.replace(enemy_obj.claim());
         }

@@ -35,7 +35,10 @@ where
         .and_then(|node| node.cast::<O>())
     {
         Some(it) => it,
-        _ => return,
+        _ => {
+            godot_print!("Couldn't find node {:?}", name);
+            return;
+        }
     };
     f(node)
 }
